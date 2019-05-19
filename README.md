@@ -35,3 +35,8 @@ Notice the `?sslmode=disable` parameter. The [pq](https://github.com/lib/pq) dri
 1. Dumps SQLite database to /tmp
 2. Sanitize the dump so it can be imported to Postgres
 3. Import the dump to the Grafana database
+
+## Acknowledgments
+Inspiration for this program was taken from
+- [haron/grafana-migrator](https://github.com/haron/grafana-migrator)
+- [This blog post](https://0x63.me/migrating-grafana-from-sqlite-to-postgresql/)
