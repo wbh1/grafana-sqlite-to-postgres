@@ -13,16 +13,13 @@ import (
 var (
 	log        = logrus.New()
 	app        = kingpin.New("Grafana SQLite to Postgres Migrator", "A command-line application to migrate Grafana data from SQLite to Postgres.")
-	user       = app.Flag("user", "Username to use to connect to Postgres.").Short('u').String()
-	password   = app.Flag("password", "Password to use to connect to Postgres.").Short('p').String()
-	host       = app.Flag("host", "TCP address (host:port) to connect to Postgres on.").Short('H').TCP()
-	db         = app.Flag("db", "Name of the database to connect to.").Short('d').String()
-	dump       = app.Flag("dump", "File path where the sqlite dump should be stored.").Default("/tmp").ExistingDir()
-	connstring = app.Flag("connstring", "Optional database connection string to use in the URL format (postgres://USERNAME:PASSWORD@HOST/DATABASE). This overrides all other connection parameters.").Short('c').String()
-	sqlitefile = app.Arg("sqlite-file", "Path to SQLite file being imported.").File()
+	dump       = app.Flag("dump", "Directory path where the sqlite dump should be stored.").Default("/tmp").ExistingDir()
+	sqlitefile = app.Arg("sqlite-file", "Path to SQLite file being imported.").Required().File()
+	connstring = app.Arg("postgres-connection-string", "URL-format database connection string to use in the URL format (postgres://USERNAME:PASSWORD@HOST/DATABASE).").Required().String()
 )
 
 func main() {
+
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 	log.SetFormatter(&logrus.TextFormatter{
 		DisableLevelTruncation: true,
@@ -60,14 +57,29 @@ func main() {
 	}
 	log.Infoln("✅ sqlite3 dump sanitized")
 
+	// Don't bother adding anything to the migration_log table.
+	if err := sqlite.CustomSanitize(dumpPath, `(?m)[\r\n]+^INSERT INTO "migration_log".*;$`, nil); err != nil {
+		log.Fatalf("❌ %v - failed to perform additional sanitizing of the dump file.", err)
+	}
+	log.Infoln("✅ migration_log statements removed")
+
+	// Do HexDecoding
+	if err := sqlite.HexDecode(dumpPath); err != nil {
+		log.Fatalf("❌ %v - failed to perform hex decoding of the dump file.", err)
+	}
+	log.Infoln("✅ hex-encoded data decoded")
+
+	// Connect to Postgres
 	db, err := postgresql.New(*connstring)
 	if err != nil {
 		log.Fatalf("❌ %v - failed to connect to Postgres database.", err)
 	}
 
+	// Import the now-sanitized dump file into Postgres
 	if err := db.ImportDump(dumpPath); err != nil {
 		log.Fatalf("❌ %v - failed to import dump file to Postgres.", err)
 	}
 	log.Infoln("✅ Imported dump file to Postgres")
+	log.Infoln("🎉 All done!")
 
 }

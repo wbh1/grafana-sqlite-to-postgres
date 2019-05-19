@@ -10,19 +10,23 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// DB allows for interface methods
-// It just holds a connection pointer
+// DB allows for interface methods.
+// It just holds a connection pointer.
 type DB struct {
 	conn *sql.DB
 }
 
-// New returns a Postgres database connection
+// New returns a Postgres database connection.
 func New(connString string) (db DB, err error) {
 	db.conn, err = sql.Open("postgres", connString)
+	if err != nil {
+		return
+	}
+	_, err = db.conn.Exec("SELECT 1")
 	return
 }
 
-// ImportDump imports a SQL dump file
+// ImportDump imports a SQL dump file.
 func (db *DB) ImportDump(dumpFile string) error {
 
 	// Alter tables because of boolean issues
@@ -42,7 +46,7 @@ func (db *DB) ImportDump(dumpFile string) error {
 
 	for _, stmt := range sqlStmts {
 		if _, err := db.conn.Exec(stmt); err != nil {
-			// We can safely ignore "duplicate key value violates unique constraint" errors
+			// We can safely ignore "duplicate key value violates unique constraint" errors.
 			if strings.Contains(err.Error(), "duplicate key") {
 				continue
 			} else {
@@ -51,12 +55,12 @@ func (db *DB) ImportDump(dumpFile string) error {
 		}
 	}
 
-	// Fix boolean columns that we converted before
+	// Fix boolean columns that we converted before.
 	if err := db.decodeBooleanColumns(); err != nil {
 		return err
 	}
 
-	// Fix sequences for new items
+	// Fix sequences for new items.
 	if err := db.fixSequences(); err != nil {
 		return err
 	}
