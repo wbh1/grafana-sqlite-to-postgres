@@ -24,8 +24,8 @@ func Sanitize(dumpFile string) error {
 	re = regexp.MustCompile(`(?m)[\r\n]?^(PRAGMA.*;|BEGIN.*;|.*sqlite_sequence.*;)$`)
 	sanitized = re.ReplaceAll(sanitized, nil)
 
-	// Put quotes around table names to avoid using reserved table names like user.
-	re = regexp.MustCompile(`(?msU)^(INSERT INTO) (.*) (VALUES.*;)$`)
+	// Ensure there are quotes around table names to avoid using reserved table names like user.
+	re = regexp.MustCompile(`(?msU)^(INSERT INTO) "?([a-zA-Z0-9_]*)"? (VALUES.*;)$`)
 	sanitized = re.ReplaceAll(sanitized, []byte(`$1 "$2" $3`))
 
 	return ioutil.WriteFile(dumpFile, sanitized, 0644)

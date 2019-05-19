@@ -58,7 +58,7 @@ func main() {
 	log.Infoln("✅ sqlite3 dump sanitized")
 
 	// Don't bother adding anything to the migration_log table.
-	if err := sqlite.CustomSanitize(dumpPath, `(?m)[\r\n]+^INSERT INTO "migration_log".*;$`, nil); err != nil {
+	if err := sqlite.CustomSanitize(dumpPath, `(?msU)[\r\n]+^.*"migration_log.*;$`, nil); err != nil {
 		log.Fatalf("❌ %v - failed to perform additional sanitizing of the dump file.", err)
 	}
 	log.Infoln("✅ migration_log statements removed")
