@@ -1,1 +1,2 @@
 cmd/grafana-migrate/grafana.db
+.vagrant

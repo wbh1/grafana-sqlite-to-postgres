@@ -8,6 +8,12 @@ You **must** already have an existing database in Postgres for Grafana.
 
 Run `CREATE DATABASE grafana` in `psql` to make the database. Then, start up an instance of Grafana pointed to the new database. Grafana will automagically create all the tables that it will need. You can shut Grafana down once those tables are made. We **need** those tables to exist for the migration to work.
 
+## Compatability
+Tested on:
+| OS | SQLite Version | Postgres Version |
+|--- | --- | ---|
+|MacOS|3.24.0|11.3|
+|CentOS 7/RHEL7|3.7.17|11.3|
 
 ## Usage
 ```
