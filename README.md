@@ -1,6 +1,8 @@
 # Grafana SQLite to Postgres Database Migrator
 
 ## Background
+[My blog post](https://wbhegedus.me/migrating-grafanas-database-from-sqlite-to-postgres/)
+
 I ran into the issue of Grafana logging users out because the SQLite database was locked and tokens couldn't be looked up. This is discussed in [#10727 on grafana/grafana](https://github.com/grafana/grafana/issues/10727#issuecomment-479378941). The solution is to migrate to a database that isn't the default one of SQLite.
 
 ## Prerequisites
