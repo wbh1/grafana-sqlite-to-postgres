@@ -11,10 +11,10 @@ Run `CREATE DATABASE grafana` in `psql` to make the database. Then, start up an 
 ## Compatability
 Tested on:
 
-| OS             | SQLite Version | Postgres Version |
-| -------------- | -------------- | ---------------- |
-| MacOS          | 3.24.0         | 11.3             |
-| CentOS 7/RHEL7 | 3.7.17         | 11.3             |
+| OS             | SQLite Version | Postgres Version | Grafana Version |
+| -------------- | -------------- | ---------------- | --------------- |
+| MacOS          | 3.24.0         | 11.3             | 6.1.0+          |
+| CentOS 7/RHEL7 | 3.7.17         | 11.3             | 6.1.0+          |
 
 ## Usage
 ```
