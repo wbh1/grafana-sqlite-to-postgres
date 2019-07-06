@@ -1,4 +1,4 @@
-module github/wbh1/grafana-sqlite-to-postgres
+module github.com/wbh1/grafana-sqlite-to-postgres
 
 go 1.12
 
