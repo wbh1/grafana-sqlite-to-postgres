@@ -75,6 +75,10 @@ func (db *DB) prepareTables() error {
 	changes := `ALTER TABLE alert ALTER COLUMN silenced TYPE integer USING silenced::integer;
 	ALTER TABLE alert_notification ALTER COLUMN is_default DROP DEFAULT;
 	ALTER TABLE alert_notification ALTER COLUMN is_default TYPE integer USING is_default::integer;
+	ALTER TABLE alert_notification ALTER COLUMN send_reminder DROP DEFAULT;
+	ALTER TABLE alert_notification ALTER COLUMN send_reminder TYPE integer USING send_reminder::integer;
+	ALTER TABLE alert_notification ALTER COLUMN disable_resolve_message DROP DEFAULT;
+	ALTER TABLE alert_notification ALTER COLUMN disable_resolve_message TYPE integer USING disable_resolve_message::integer;
 	ALTER TABLE dashboard ALTER COLUMN is_folder DROP DEFAULT;
 	ALTER TABLE dashboard ALTER COLUMN is_folder TYPE integer USING is_folder::integer;
 	ALTER TABLE dashboard ALTER COLUMN has_acl DROP DEFAULT;
@@ -117,6 +121,18 @@ func (db *DB) decodeBooleanColumns() error {
 			ALTER COLUMN is_default TYPE boolean
 			USING CASE WHEN is_default = 0 THEN FALSE
 				WHEN is_default = 1 THEN TRUE
+				ELSE NULL
+				END;
+		ALTER TABLE alert_notification
+			ALTER COLUMN send_reminder TYPE boolean
+			USING CASE WHEN send_reminder = 0 THEN FALSE
+				WHEN send_reminder = 1 THEN TRUE
+				ELSE NULL
+				END;
+		ALTER TABLE alert_notification
+			ALTER COLUMN disable_resolve_message TYPE boolean
+			USING CASE WHEN disable_resolve_message = 0 THEN FALSE
+				WHEN disable_resolve_message = 1 THEN TRUE
 				ELSE NULL
 				END;
 		ALTER TABLE alert_notification ALTER COLUMN is_default SET DEFAULT false;
