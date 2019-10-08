@@ -96,6 +96,8 @@ func (db *DB) prepareTables() error {
 	ALTER TABLE temp_user ALTER COLUMN email_sent TYPE integer USING email_sent::integer;
 	ALTER TABLE "user" ALTER COLUMN is_admin TYPE integer USING is_admin::integer;
 	ALTER TABLE "user" ALTER COLUMN email_verified TYPE integer USING email_verified::integer;
+	ALTER TABLE "user" ALTER COLUMN is_disabled DROP DEFAULT;
+	ALTER TABLE "user" ALTER COLUMN is_disabled TYPE integer USING is_disabled::integer;
 	ALTER TABLE user_auth_token ALTER COLUMN auth_token_seen TYPE integer USING auth_token_seen::integer;
 	DELETE FROM org WHERE id=1`
 
@@ -221,6 +223,13 @@ func (db *DB) decodeBooleanColumns() error {
 				WHEN email_verified = 1 THEN TRUE
 				ELSE NULL
 				END;
+		ALTER TABLE "user"
+			ALTER COLUMN is_disabled TYPE boolean
+			USING CASE WHEN is_disabled = 0 THEN FALSE
+				WHEN is_disabled = 1 THEN TRUE
+				ELSE NULL
+				END;
+		ALTER TABLE "user" ALTER COLUMN is_disabled SET DEFAULT false;
 		ALTER TABLE user_auth_token
 			ALTER COLUMN auth_token_seen TYPE boolean
 				USING CASE WHEN auth_token_seen = 0 THEN FALSE
