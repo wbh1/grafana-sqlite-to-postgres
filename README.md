@@ -1,5 +1,8 @@
 # Grafana SQLite to Postgres Database Migrator
 
+[![Build Status](https://cloud.drone.io/api/badges/wbh1/grafana-sqlite-to-postgres/status.svg)](https://cloud.drone.io/wbh1/grafana-sqlite-to-postgres)
+[![Go Report Card](https://goreportcard.com/badge/github.com/wbh1/grafana-sqlite-to-postgres)](https://goreportcard.com/report/github.com/wbh1/grafana-sqlite-to-postgres)
+
 ## Background
 [My blog post](https://wbhegedus.me/migrating-grafanas-database-from-sqlite-to-postgres/)
 
