@@ -12,6 +12,7 @@ steps:
     event:
       - push
       - pull_request
+      - tag
 
 - name: publish
   image: plugins/github-release
