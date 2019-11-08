@@ -1,0 +1,27 @@
+kind: pipeline
+name: default
+
+steps:
+- name: build
+  image: golang:1.12
+  commands:
+    - make build-all
+  when:
+    branch:
+      - master
+    event:
+      - push
+      - pull_request
+
+- name: publish
+  image: plugins/github-release
+  settings:
+    api_key:
+      from_secret: github_api_key
+    files: dist/*
+  when:
+    event:
+      - tag
+    branch:
+      - master
+
