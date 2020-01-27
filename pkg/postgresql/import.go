@@ -42,7 +42,7 @@ func (db *DB) ImportDump(dumpFile string) error {
 		return err
 	}
 
-	sqlStmts := strings.Split(string(file), "\n")
+	sqlStmts := strings.Split(string(file), ";\n")
 
 	for _, stmt := range sqlStmts {
 		if _, err := db.conn.Exec(stmt); err != nil {

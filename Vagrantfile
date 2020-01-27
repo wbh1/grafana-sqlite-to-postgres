@@ -68,10 +68,13 @@ Vagrant.configure("2") do |config|
     curl -fsSL https://get.docker.com/ | sh
     sudo systemctl start docker
     sudo docker run --rm --network host --name grafana-postgres -e POSTGRES_PASSWORD=testing -d postgres:alpine
-    sleep 1
+    sleep 10
     sudo docker exec -it grafana-postgres psql -U postgres postgres -c 'create database grafana;'
 
     sudo docker run -d --network host --rm --name=grafana -e GF_DATABASE_URL=postgres://postgres:testing@localhost/grafana grafana/grafana:latest
     sudo docker stop grafana
+
+    curl -O https://dl.google.com/go/go1.13.6.linux-amd64.tar.gz
+    tar  -C /usr/local -xzvf go1.13.6.linux-amd64.tar.gz
   SHELL
 end
