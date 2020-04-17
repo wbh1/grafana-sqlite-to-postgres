@@ -72,6 +72,7 @@ func (db *DB) ImportDump(dumpFile string) error {
 // Change column types that expect boolean to integer so that we can get the data in.
 // We'll decode their values into booleans later.
 func (db *DB) prepareTables() error {
+	// TODO: Update this to use tablechanges.go
 	changes := `ALTER TABLE alert ALTER COLUMN silenced TYPE integer USING silenced::integer;
 	ALTER TABLE alert_notification ALTER COLUMN is_default DROP DEFAULT;
 	ALTER TABLE alert_notification ALTER COLUMN is_default TYPE integer USING is_default::integer;
