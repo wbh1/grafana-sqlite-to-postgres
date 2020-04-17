@@ -4,9 +4,12 @@ SRC_DIR := ./cmd/grafana-migrate
 
 # This version-strategy uses git tags to set the version string
 VERSION := $(shell git describe --tags --always --dirty)
+OS := $(shell go env GOOS)
+ARCH := $(shell go env GOARCH)
+
 
 build:
-	go build -o dist/$(BIN)_darwin_amd64-$(VERSION) $(SRC_DIR)
+	go build -o dist/$(BIN)_$(OS)_$(ARCH)-$(VERSION) $(SRC_DIR)
 
 build-all: 
 	env GOOS=darwin GOARCH=amd64 go build -o dist/$(BIN)_darwin_amd64-$(VERSION) $(SRC_DIR)
