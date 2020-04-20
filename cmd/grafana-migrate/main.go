@@ -16,6 +16,7 @@ var (
 	dump       = app.Flag("dump", "Directory path where the sqlite dump should be stored.").Default("/tmp").ExistingDir()
 	sqlitefile = app.Arg("sqlite-file", "Path to SQLite file being imported.").Required().File()
 	connstring = app.Arg("postgres-connection-string", "URL-format database connection string to use in the URL format (postgres://USERNAME:PASSWORD@HOST/DATABASE).").Required().String()
+	debug      = app.Flag("debug", "Enable debug level logging").Bool()
 )
 
 func main() {
@@ -25,6 +26,10 @@ func main() {
 		DisableLevelTruncation: true,
 		FullTimestamp:          true,
 	})
+
+	if *debug == true {
+		log.SetLevel(logrus.DebugLevel)
+	}
 
 	dumpPath := *dump + "/grafana.sql"
 
@@ -70,7 +75,7 @@ func main() {
 	log.Infoln("✅ hex-encoded data decoded")
 
 	// Connect to Postgres
-	db, err := postgresql.New(*connstring)
+	db, err := postgresql.New(*connstring, log)
 	if err != nil {
 		log.Fatalf("❌ %v - failed to connect to Postgres database.", err)
 	}

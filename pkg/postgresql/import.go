@@ -15,10 +15,12 @@ import (
 // It just holds a connection pointer.
 type DB struct {
 	conn *sql.DB
+	log  *logrus.Logger
 }
 
 // New returns a Postgres database connection.
-func New(connString string) (db DB, err error) {
+func New(connString string, logger *logrus.Logger) (db DB, err error) {
+	db.log = logger
 	db.conn, err = sql.Open("postgres", connString)
 	if err != nil {
 		return
@@ -78,7 +80,7 @@ func (db *DB) prepareTables() error {
 		// update the column type to be integer so that it's compatible with sqlite's 0/1 bool values
 		for _, column := range table.Columns {
 			stmt := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s TYPE integer USING %s::integer", table.Table, column.Name, column.Name)
-			logrus.Debugln("Executing: ", stmt)
+			db.log.Debugln("Executing: ", stmt)
 			if _, err := db.conn.Exec(stmt); err != nil {
 				return fmt.Errorf("%v %v", err.Error(), stmt)
 			}
@@ -86,7 +88,7 @@ func (db *DB) prepareTables() error {
 			// If the column has a default value associated with it, drop it.
 			if column.Default != "" {
 				stmt = fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s DROP DEFAULT", table.Table, column.Name)
-				logrus.Debugln("Executing: ", stmt)
+				db.log.Debugln("Executing: ", stmt)
 				if _, err := db.conn.Exec(stmt); err != nil {
 					return fmt.Errorf("%v %v", err.Error(), stmt)
 				}
@@ -97,7 +99,7 @@ func (db *DB) prepareTables() error {
 
 	// Delete the org that gets auto-generated the first time Grafana runs.
 	stmt := "DELETE FROM org WHERE id=1"
-	logrus.Debugln("Executing: ", stmt)
+	db.log.Debugln("Executing: ", stmt)
 	if _, err := db.conn.Exec(stmt); err != nil {
 		return fmt.Errorf("%v %v", err.Error(), stmt)
 	}
@@ -111,7 +113,7 @@ func (db *DB) decodeBooleanColumns() error {
 	for _, table := range TableChanges {
 		for _, column := range table.Columns {
 			stmt := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s TYPE boolean USING CASE WHEN %s = 0 THEN FALSE WHEN %s = 1 THEN TRUE ELSE NULL END", table.Table, column.Name, column.Name, column.Name)
-			logrus.Debugln("Executing: ", stmt)
+			db.log.Debugln("Executing: ", stmt)
 			if _, err := db.conn.Exec(stmt); err != nil {
 				return fmt.Errorf("%v %v", err.Error(), stmt)
 			}
@@ -119,7 +121,7 @@ func (db *DB) decodeBooleanColumns() error {
 			// If the column has a default value associated with it, drop it.
 			if column.Default != "" {
 				stmt = fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET DEFAULT %s", table.Table, column.Name, column.Default)
-				logrus.Debugln("Executing: ", stmt)
+				db.log.Debugln("Executing: ", stmt)
 				if _, err := db.conn.Exec(stmt); err != nil {
 					return fmt.Errorf("%v %v", err.Error(), stmt)
 				}
@@ -152,14 +154,14 @@ AND D.refobjsubid = C.attnum
 AND T.relname = PGT.tablename
 ORDER BY S.relname;`
 
-	logrus.Debugln("Running query to generate statements to reset all sequences.")
+	db.log.Debugln("Running query to generate statements to reset all sequences.")
 	rows, err := db.conn.Query(stmt)
 	if err != nil {
 		return fmt.Errorf("%v %v", err.Error(), stmt)
 	}
 	defer rows.Close()
 
-	logrus.Debugln("Running generated queries to reset all sequences.")
+	db.log.Debugln("Running generated queries to reset all sequences.")
 	for rows.Next() {
 		var stmt string
 		if err := rows.Scan(&stmt); err != nil {
