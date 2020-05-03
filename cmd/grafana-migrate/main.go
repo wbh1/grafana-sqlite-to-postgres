@@ -62,6 +62,11 @@ func main() {
 		log.Fatalf("❌ %v - failed to perform additional sanitizing of the dump file.", err)
 	}
 	log.Infoln("✅ migration_log statements removed")
+	// Fix char conversion (char -> chr)
+	if err := sqlite.CustomSanitize(dumpPath, `char\(10\)\)`, []byte("chr(10))")); err != nil {
+		log.Fatalf("❌ %v - failed to perform char keyword sanitizing of the dump file.", err)
+	}
+	log.Infoln("✅ char keyword transformed")
 
 	// Do HexDecoding
 	if err := sqlite.HexDecode(dumpPath); err != nil {
