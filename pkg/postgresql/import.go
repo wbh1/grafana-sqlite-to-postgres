@@ -1,9 +1,11 @@
 package postgresql
 
 import (
+	"bufio"
 	"database/sql"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	// Postgres driver
@@ -32,12 +34,26 @@ func New(connString string, logger *logrus.Logger) (db DB, err error) {
 // ImportDump imports a SQL dump file.
 func (db *DB) ImportDump(dumpFile string) error {
 
+	promptToContinue := func() bool {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("You seem to have encountered some errors. Would you still like to continue? [Y/n]: ")
+		text, _ := reader.ReadString('\n')
+		switch response := strings.ToLower(text); response {
+			case "n\n":
+				return false
+			default:
+				return true
+		}
+	}
+
 	// Alter tables because of boolean issues
 	// SQLite has booleans as 1's and 0's
 	// Postgres is true/false
 	// We'll convert it after importing the dump.
-	if err := db.prepareTables(); err != nil {
-		return err
+	if errorEncountered := db.prepareTables(); errorEncountered == true {
+		if promptToContinue() != true {
+			return fmt.Errorf("%s", "Stopping migration at user's request.")
+		}
 	}
 
 	file, err := ioutil.ReadFile(dumpFile)
@@ -59,8 +75,10 @@ func (db *DB) ImportDump(dumpFile string) error {
 	}
 
 	// Fix boolean columns that we converted before.
-	if err := db.decodeBooleanColumns(); err != nil {
-		return err
+	if errorEncountered := db.decodeBooleanColumns(); errorEncountered == true {
+		if promptToContinue() != true {
+			return fmt.Errorf("%s", "Stopping migration at user's request.")
+		}
 	}
 
 	// Fix sequences for new items.
@@ -74,23 +92,33 @@ func (db *DB) ImportDump(dumpFile string) error {
 
 // Change column types that expect boolean to integer so that we can get the data in.
 // We'll decode their values into booleans later.
-func (db *DB) prepareTables() error {
+func (db *DB) prepareTables() (errorEncountered bool) {
 	for _, table := range TableChanges {
 		// for each column associated with the table,
 		// update the column type to be integer so that it's compatible with sqlite's 0/1 bool values
 		for _, column := range table.Columns {
+			// If the column has a default value associated with it, drop it.
+			if column.Default != "" {
+				stmt := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s DROP DEFAULT", table.Table, column.Name)
+				db.log.Debugln("Executing: ", stmt)
+				if _, err := db.conn.Exec(stmt); err != nil {
+					if strings.Contains(err.Error(), "does not exist") {
+						logrus.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
+					} else {
+						logrus.Warnf("%v %v", err.Error(), stmt)
+						errorEncountered = true
+					}
+				}
+			}
+
 			stmt := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s TYPE integer USING %s::integer", table.Table, column.Name, column.Name)
 			db.log.Debugln("Executing: ", stmt)
 			if _, err := db.conn.Exec(stmt); err != nil {
-				return fmt.Errorf("%v %v", err.Error(), stmt)
-			}
-
-			// If the column has a default value associated with it, drop it.
-			if column.Default != "" {
-				stmt = fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s DROP DEFAULT", table.Table, column.Name)
-				db.log.Debugln("Executing: ", stmt)
-				if _, err := db.conn.Exec(stmt); err != nil {
-					return fmt.Errorf("%v %v", err.Error(), stmt)
+				if strings.Contains(err.Error(), "does not exist") {
+					logrus.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
+				} else {
+					logrus.Warnf("%v %v", err.Error(), stmt)
+					errorEncountered = true
 				}
 			}
 
@@ -101,21 +129,29 @@ func (db *DB) prepareTables() error {
 	stmt := "DELETE FROM org WHERE id=1"
 	db.log.Debugln("Executing: ", stmt)
 	if _, err := db.conn.Exec(stmt); err != nil {
-		return fmt.Errorf("%v %v", err.Error(), stmt)
+		logrus.Errorf("%v %v", err.Error(), stmt)
+		errorEncountered = true
 	}
 
-	return nil
+	return
 }
 
 // Change columns back to boolean type by decoding their current values
-func (db *DB) decodeBooleanColumns() error {
+func (db *DB) decodeBooleanColumns() bool {
+
+	var errorEncountered bool
 
 	for _, table := range TableChanges {
 		for _, column := range table.Columns {
-			stmt := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s TYPE %s USING CASE WHEN %s = 0 THEN FALSE WHEN %s = 1 THEN TRUE ELSE NULL END", table.Table, column.Name, column.Type, column.Name, column.Name)
+			stmt := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s TYPE boolean USING CASE WHEN %s = 0 THEN FALSE WHEN %s = 1 THEN TRUE ELSE NULL END", table.Table, column.Name, column.Name, column.Name)
 			db.log.Debugln("Executing: ", stmt)
 			if _, err := db.conn.Exec(stmt); err != nil {
-				return fmt.Errorf("%v %v", err.Error(), stmt)
+				if strings.Contains(err.Error(), "does not exist") {
+					logrus.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
+				} else {
+					logrus.Warnf("%v %v", err.Error(), stmt)
+					errorEncountered = true
+				}
 			}
 
 			// If the column has a default value associated with it, drop it.
@@ -123,14 +159,19 @@ func (db *DB) decodeBooleanColumns() error {
 				stmt = fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET DEFAULT %s", table.Table, column.Name, column.Default)
 				db.log.Debugln("Executing: ", stmt)
 				if _, err := db.conn.Exec(stmt); err != nil {
-					return fmt.Errorf("%v %v", err.Error(), stmt)
+					if strings.Contains(err.Error(), "does not exist") {
+						logrus.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
+					} else {
+						logrus.Warnf("%v %v", err.Error(), stmt)
+						errorEncountered = true
+					}
 				}
 			}
 
 		} // end column loop
 	} // end table loop
 
-	return nil
+	return errorEncountered
 }
 
 // Make sure that sequences are fine on the tables

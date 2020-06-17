@@ -6,9 +6,6 @@ type Column struct {
 
 	// If the column gets a default value set, specify it here
 	Default string
-
-	// Type of the column's data
-	Type string
 }
 
 // TableChange documents a table that needs to be changed
