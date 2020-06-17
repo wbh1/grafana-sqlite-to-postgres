@@ -103,9 +103,9 @@ func (db *DB) prepareTables() (errorEncountered bool) {
 				db.log.Debugln("Executing: ", stmt)
 				if _, err := db.conn.Exec(stmt); err != nil {
 					if strings.Contains(err.Error(), "does not exist") {
-						logrus.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
+						db.log.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
 					} else {
-						logrus.Warnf("%v %v", err.Error(), stmt)
+						db.log.Warnf("%v %v", err.Error(), stmt)
 						errorEncountered = true
 					}
 				}
@@ -115,9 +115,9 @@ func (db *DB) prepareTables() (errorEncountered bool) {
 			db.log.Debugln("Executing: ", stmt)
 			if _, err := db.conn.Exec(stmt); err != nil {
 				if strings.Contains(err.Error(), "does not exist") {
-					logrus.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
+					db.log.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
 				} else {
-					logrus.Warnf("%v %v", err.Error(), stmt)
+					db.log.Warnf("%v %v", err.Error(), stmt)
 					errorEncountered = true
 				}
 			}
@@ -129,7 +129,7 @@ func (db *DB) prepareTables() (errorEncountered bool) {
 	stmt := "DELETE FROM org WHERE id=1"
 	db.log.Debugln("Executing: ", stmt)
 	if _, err := db.conn.Exec(stmt); err != nil {
-		logrus.Errorf("%v %v", err.Error(), stmt)
+		db.log.Errorf("%v %v", err.Error(), stmt)
 		errorEncountered = true
 	}
 
@@ -147,9 +147,9 @@ func (db *DB) decodeBooleanColumns() bool {
 			db.log.Debugln("Executing: ", stmt)
 			if _, err := db.conn.Exec(stmt); err != nil {
 				if strings.Contains(err.Error(), "does not exist") {
-					logrus.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
+					db.log.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
 				} else {
-					logrus.Warnf("%v %v", err.Error(), stmt)
+					db.log.Warnf("%v %v", err.Error(), stmt)
 					errorEncountered = true
 				}
 			}
@@ -160,9 +160,9 @@ func (db *DB) decodeBooleanColumns() bool {
 				db.log.Debugln("Executing: ", stmt)
 				if _, err := db.conn.Exec(stmt); err != nil {
 					if strings.Contains(err.Error(), "does not exist") {
-						logrus.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
+						db.log.Debugf("%s %v %v", "Column/table doesn't exist. This is usually fine to ignore, but here's the info:", err.Error(), stmt)
 					} else {
-						logrus.Warnf("%v %v", err.Error(), stmt)
+						db.log.Warnf("%v %v", err.Error(), stmt)
 						errorEncountered = true
 					}
 				}
