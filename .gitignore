@@ -1,3 +1,5 @@
 cmd/grafana-migrate/grafana.db
+graf
 .vagrant
 bin
+.idea

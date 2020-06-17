@@ -1,0 +1,31 @@
+version: "2.4"
+services:
+  grafana:
+    networks:
+      - grafananet
+    image: grafana/grafana:6.1.0
+    ports:
+      - "3000:3000"
+    environment:
+      GF_DATABASE_URL: "postgres://postgres:postgres@postgres_grafana/grafana"
+    depends_on:
+      postgres_grafana:
+        condition: service_healthy
+
+  postgres_grafana:
+    networks:
+      - grafananet
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: grafana
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD", "psql", "-U", "postgres", "grafana", "-c", "select 1;"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+networks:
+  grafananet:
