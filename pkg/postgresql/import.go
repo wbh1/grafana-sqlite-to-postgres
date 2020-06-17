@@ -112,7 +112,7 @@ func (db *DB) decodeBooleanColumns() error {
 
 	for _, table := range TableChanges {
 		for _, column := range table.Columns {
-			stmt := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s TYPE boolean USING CASE WHEN %s = 0 THEN FALSE WHEN %s = 1 THEN TRUE ELSE NULL END", table.Table, column.Name, column.Name, column.Name)
+			stmt := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s TYPE %s USING CASE WHEN %s = 0 THEN FALSE WHEN %s = 1 THEN TRUE ELSE NULL END", table.Table, column.Name, column.Type, column.Name, column.Name)
 			db.log.Debugln("Executing: ", stmt)
 			if _, err := db.conn.Exec(stmt); err != nil {
 				return fmt.Errorf("%v %v", err.Error(), stmt)
