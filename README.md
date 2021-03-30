@@ -35,6 +35,9 @@ Args:
   <sqlite-file>                 Path to SQLite file being imported.
   <postgres-connection-string>  URL-format database connection string to use in the URL format (postgres://USERNAME:PASSWORD@HOST/DATABASE).
 ```
+### Use as Docker image
+1. Build docker image: `docker build -t grafana-sqlite-to-postgres .`
+2. Run migration: `docker run --rm -ti -v <PATH_TO_DB_FILE>:/grafana.db grafana-sqlite-to-postgres /grafana.db "postgres://<USERNAME>:<PASSWORD>@<HOST>:5432/<DATABASE_NAME>?sslmode=disable"`
 
 ## Example Command
 This is the command I used to transfer my Grafana database:
