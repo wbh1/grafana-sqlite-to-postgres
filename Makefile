@@ -9,9 +9,9 @@ ARCH := $(shell go env GOARCH)
 
 
 build:
-	go build -o dist/$(BIN)_$(OS)_$(ARCH)-$(VERSION) $(SRC_DIR)
+	go build -o dist/$(BIN) $(SRC_DIR)
 
-build-all: 
+build-all:
 	env GOOS=darwin GOARCH=amd64 go build -o dist/$(BIN)_darwin_amd64-$(VERSION) $(SRC_DIR)
 	env GOOS=linux GOARCH=amd64 go build -o dist/$(BIN)_linux_amd64-$(VERSION) $(SRC_DIR)
 	env GOOS=windows GOARCH=amd64 go build -o dist/$(BIN)_windows_amd64-$(VERSION) $(SRC_DIR)

@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/wbh1/grafana-sqlite-to-postgres/pkg/postgresql"
-	"github.com/wbh1/grafana-sqlite-to-postgres/pkg/sqlite"
+	"github.com/percona/grafana-db-migrator/pkg/postgresql"
+	"github.com/percona/grafana-db-migrator/pkg/sqlite"
 
 	"github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"

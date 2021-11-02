@@ -1,12 +1,9 @@
 # Grafana SQLite to Postgres Database Migrator
-
-[![Build Status](https://cloud.drone.io/api/badges/wbh1/grafana-sqlite-to-postgres/status.svg)](https://cloud.drone.io/wbh1/grafana-sqlite-to-postgres)
-[![Go Report Card](https://goreportcard.com/badge/github.com/wbh1/grafana-sqlite-to-postgres)](https://goreportcard.com/report/github.com/wbh1/grafana-sqlite-to-postgres)
+[![Go Report Card](https://goreportcard.com/badge/github.com/percona/grafana-db-migrator)](https://goreportcard.com/report/github.com/percona/grafana-db-migrator)
 
 ## Background
-[My blog post](https://wbhegedus.me/migrating-grafanas-database-from-sqlite-to-postgres/)
 
-I ran into the issue of Grafana logging users out because the SQLite database was locked and tokens couldn't be looked up. This is discussed in [#10727 on grafana/grafana](https://github.com/grafana/grafana/issues/10727#issuecomment-479378941). The solution is to migrate to a database that isn't the default one of SQLite.
+This project was forked from [wbh1/grafana-sqlite-to-postgres](https://github.com/wbh1/grafana-sqlite-to-postgres)
 
 ## Prerequisites
 You **must** already have an existing database in Postgres for Grafana.
@@ -53,5 +50,6 @@ Notice the `?sslmode=disable` parameter. The [pq](https://github.com/lib/pq) dri
 
 ## Acknowledgments
 Inspiration for this program was taken from
+- [wbh1/grafana-sqlite-to-postgres](https://github.com/wbh1/grafana-sqlite-to-postgres)
 - [haron/grafana-migrator](https://github.com/haron/grafana-migrator)
 - [This blog post](https://0x63.me/migrating-grafana-from-sqlite-to-postgresql/)
