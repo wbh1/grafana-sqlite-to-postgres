@@ -1,6 +1,6 @@
 # The binary to build (just the basename).
 BIN := grafana-db-migrator
-SRC_DIR := ./cmd/grafana-db-migrator
+SRC_DIR := ./cmd/grafana-migrate
 
 # This version-strategy uses git tags to set the version string
 VERSION := $(shell git describe --tags --always --dirty)
