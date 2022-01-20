@@ -18,3 +18,8 @@ build-all:
 
 clean:
 	rm dist/*
+
+env-run:
+	env GOOS=linux GOARCH=amd64 go build -o dist/$(BIN) $(SRC_DIR)
+	docker cp dist/$(BIN) pmm-server:/
+	docker exec -t pmm-server /grafana-db-migrator --change-char-to-text --reset-home-dashboard /srv/backup/grafana/grafana.db "postgres://grafana:grafana@localhost:5432/grafana?sslmode=disable"

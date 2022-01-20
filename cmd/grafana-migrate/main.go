@@ -11,12 +11,14 @@ import (
 )
 
 var (
-	log        = logrus.New()
-	app        = kingpin.New("Grafana SQLite to Postgres Migrator", "A command-line application to migrate Grafana data from SQLite to Postgres.")
-	dump       = app.Flag("dump", "Directory path where the sqlite dump should be stored.").Default("/tmp").ExistingDir()
-	sqlitefile = app.Arg("sqlite-file", "Path to SQLite file being imported.").Required().File()
-	connstring = app.Arg("postgres-connection-string", "URL-format database connection string to use in the URL format (postgres://USERNAME:PASSWORD@HOST/DATABASE).").Required().String()
-	debug      = app.Flag("debug", "Enable debug level logging").Bool()
+	log                = logrus.New()
+	app                = kingpin.New("Grafana SQLite to Postgres Migrator", "A command-line application to migrate Grafana data from SQLite to Postgres.")
+	dump               = app.Flag("dump", "Directory path where the sqlite dump should be stored.").Default("/tmp").ExistingDir()
+	sqlitefile         = app.Arg("sqlite-file", "Path to SQLite file being imported.").Required().File()
+	connstring         = app.Arg("postgres-connection-string", "URL-format database connection string to use in the URL format (postgres://USERNAME:PASSWORD@HOST/DATABASE).").Required().String()
+	debug              = app.Flag("debug", "Enable debug level logging").Bool()
+	resetHomeDashboard = app.Flag("reset-home-dashboard", "Reset home dashboard for default organization").Bool()
+	changeCharToText   = app.Flag("change-char-to-text", "Change CHAR filed to TEXT").Bool()
 )
 
 func main() {
@@ -27,7 +29,7 @@ func main() {
 		FullTimestamp:          true,
 	})
 
-	if *debug == true {
+	if *debug {
 		log.SetLevel(logrus.DebugLevel)
 	}
 
@@ -90,6 +92,32 @@ func main() {
 		log.Fatalf("❌ %v - failed to import dump file to Postgres.", err)
 	}
 	log.Infoln("✅ Imported dump file to Postgres")
+
+	// Get folder/dashboard relationshio for fixing after upgrade
+	dashboardFolders, err := sqlite.GetFoldersForDashboards(f.Name())
+	if err != nil {
+		log.Fatalf("❌ %v - failed to get relationship between folders and dashboards.", err)
+	}
+	log.Infoln("✅ got folder/dashboard relationship from SQLite")
+
+	if err := db.FixFolderID(dashboardFolders, log); err != nil {
+		log.Fatalf("❌ %v - failed to fix folders ID.", err)
+	}
+	log.Infoln("✅ folders ID was fixed")
+
+	if *resetHomeDashboard {
+		if err := db.FixHomeDashboard(); err != nil {
+			log.Fatalf("❌ %v - failed to change home dashboard.", err)
+		}
+		log.Infoln("✅ home dashboard was changed to default.")
+	}
+
+	if *changeCharToText {
+		if err := db.ChangeCharToText(); err != nil {
+			log.Fatalf("❌ %v - failed convert CHAR type to TEXT")
+		}
+		log.Infoln("✅ CHAR type was converted to TEXT.")
+	}
 	log.Infoln("🎉 All done!")
 
 }
