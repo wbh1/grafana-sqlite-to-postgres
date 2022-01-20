@@ -58,6 +58,10 @@ func (db *DB) FixFolderID(dashboardsMapping map[string]string, logger *logrus.Lo
 		targetFolder := dashboardsMapping[dashboardSlug]
 		if currentFolder != targetFolder {
 			targetFolderId := foldersSlugToID[targetFolder]
+			// it means dashboard not exist
+			if targetFolderId == 0 {
+				continue
+			}
 			logger.Infof("💡 Replace folder id for %v to %v", dashboardSlug, targetFolderId)
 			res, err := db.conn.Exec("UPDATE dashboard SET folder_id = $1 WHERE slug = $2;", targetFolderId, dashboardSlug)
 			if err != nil {

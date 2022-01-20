@@ -19,6 +19,8 @@ var (
 	debug              = app.Flag("debug", "Enable debug level logging").Bool()
 	resetHomeDashboard = app.Flag("reset-home-dashboard", "Reset home dashboard for default organization").Bool()
 	changeCharToText   = app.Flag("change-char-to-text", "Change CHAR filed to TEXT").Bool()
+	// fix relationshop between dashboard and folders (provisioning error)
+	fixFoldersID       = app.Flag("fix-folders-id", "Fix correlation between folders and dashboards").Bool()
 )
 
 func main() {
@@ -45,6 +47,26 @@ func main() {
 		log.Fatalf("❌ %v - is the sqlite3 command line tool installed?", err)
 	}
 	log.Infof("✅ sqlite3 command exists")
+
+	if *fixFoldersID {
+		db, err := postgresql.New(*connstring, log)
+		if err != nil {
+			log.Fatalf("❌ %v - failed to connect to Postgres database.", err)
+		}
+		// Get folder/dashboard relationshio for fixing after upgrade
+		dashboardFolders, err := sqlite.GetFoldersForDashboards(f.Name())
+		if err != nil {
+			log.Fatalf("❌ %v - failed to get relationship between folders and dashboards.", err)
+		}
+		log.Infoln("✅ got folder/dashboard relationship from SQLite")
+
+		if err := db.FixFolderID(dashboardFolders, log); err != nil {
+			log.Fatalf("❌ %v - failed to fix folders ID.", err)
+		}
+		log.Infoln("✅ folders ID was fixed")
+		log.Infoln("🎉 All done!")
+		os.Exit(0)
+	}
 
 	// Dump the SQLite database
 	if err := sqlite.Dump(f.Name(), dumpPath); err != nil {
@@ -92,18 +114,6 @@ func main() {
 		log.Fatalf("❌ %v - failed to import dump file to Postgres.", err)
 	}
 	log.Infoln("✅ Imported dump file to Postgres")
-
-	// Get folder/dashboard relationshio for fixing after upgrade
-	dashboardFolders, err := sqlite.GetFoldersForDashboards(f.Name())
-	if err != nil {
-		log.Fatalf("❌ %v - failed to get relationship between folders and dashboards.", err)
-	}
-	log.Infoln("✅ got folder/dashboard relationship from SQLite")
-
-	if err := db.FixFolderID(dashboardFolders, log); err != nil {
-		log.Fatalf("❌ %v - failed to fix folders ID.", err)
-	}
-	log.Infoln("✅ folders ID was fixed")
 
 	if *resetHomeDashboard {
 		if err := db.FixHomeDashboard(); err != nil {
