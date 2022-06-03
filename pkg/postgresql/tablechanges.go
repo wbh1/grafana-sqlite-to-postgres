@@ -61,6 +61,10 @@ var TableChanges = []TableChange{
 				Name:    "has_acl",
 				Default: "false",
 			},
+			{
+				Name:    "is_public",
+				Default: "false",
+			},
 		},
 	},
 	{
@@ -148,6 +152,15 @@ var TableChanges = []TableChange{
 		Columns: []Column{
 			{
 				Name: "auth_token_seen",
+			},
+		},
+	},
+	{
+		Table: "role",
+		Columns: []Column{
+			{
+				Name:    "hidden",
+				Default: "false",
 			},
 		},
 	},
