@@ -13,7 +13,7 @@ steps:
         - master
 
   - name: build
-    image: golang:1.17
+    image: golang:1.18
     commands:
       - make build-all
     when:
