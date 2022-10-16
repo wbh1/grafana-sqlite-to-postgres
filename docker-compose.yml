@@ -3,14 +3,59 @@ services:
   grafana:
     networks:
       - grafananet
-    image: grafana/grafana:6.1.0
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./test/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_sqlite:/var/lib/grafana
+    healthcheck:
+      test: wget --spider http://localhost:3000/robots.txt
+      interval: 5s
+      timeout: 3s
+      retries: 3
+  
+  grafana-migrator:
+    command: /grafanadb/grafana.db "postgres://postgres:postgres@postgres_grafana:5432/grafana?sslmode=disable"
+    networks:
+      - grafananet
+    image: grafana-sqlite-to-postgres
+    volumes:
+      - grafana_sqlite:/grafanadb:ro
+    build: ./
+    depends_on:
+      grafana_postgres:
+        condition: service_healthy
+      grafana:
+        condition: service_healthy
+  
+  grafana_postgres:
+    networks:
+      - grafananet
+    image: grafana/grafana:latest
     ports:
       - "3000:3000"
     environment:
       GF_DATABASE_URL: "postgres://postgres:postgres@postgres_grafana/grafana"
+    healthcheck:
+      test: wget --spider http://localhost:3000/robots.txt
+      interval: 5s
+      timeout: 3s
+      retries: 3
     depends_on:
       postgres_grafana:
         condition: service_healthy
+  
+  prometheus:
+    user: root
+    networks:
+      - grafananet
+    image: prom/prometheus:latest
+    volumes:
+      - ./test/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9090:9090"
 
   postgres_grafana:
     networks:
@@ -29,3 +74,5 @@ services:
       retries: 3
 networks:
   grafananet:
+volumes:
+  grafana_sqlite:
