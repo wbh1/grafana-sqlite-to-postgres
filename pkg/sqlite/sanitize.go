@@ -1,11 +1,9 @@
 package sqlite
 
 import (
-	"encoding/hex"
+	"fmt"
 	"io/ioutil"
 	"regexp"
-
-	"github.com/sirupsen/logrus"
 )
 
 // Sanitize cleans up a SQLite dump file to prep it for import into Postgres.
@@ -62,24 +60,14 @@ func RemoveCreateStatements(dumpFile string) error {
 // decodes any hex-encoded data it finds.
 func HexDecode(dumpFile string) error {
 	re := regexp.MustCompile(`(?m)X\'([a-fA-F0-9]+)\'`)
-	re2 := regexp.MustCompile(`'`)
 	data, err := ioutil.ReadFile(dumpFile)
 	if err != nil {
 		return err
 	}
 
-	// Define a function to actually decode hexstring.
+	// Define a function to wrap encoded hex data in a call to decode hexstring.
 	decodeHex := func(hexEncoded []byte) []byte {
-		// Find the regex submatch in the argument passed to the function
-		// then decode the submatch.
-		decoded, err := hex.DecodeString(string(re.FindSubmatch(hexEncoded)[1]))
-		if err != nil {
-			logrus.Fatalf("Failed to decode hex-string in: %s", hexEncoded)
-		}
-		decoded = re2.ReplaceAll(decoded, []byte(`''`))
-
-		// Surround decoded string with single quotes again.
-		return []byte(`'` + string(decoded) + `'`)
+		return []byte(fmt.Sprintf("decode('%s', 'hex')", re.FindSubmatch(hexEncoded)[1]))
 	}
 
 	// Replace regex matches from the dumpFile using the `decodeHex` function defined above.
