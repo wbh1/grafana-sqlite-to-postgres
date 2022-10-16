@@ -27,10 +27,10 @@ var TableChanges = []TableChange{
 	{
 		Table: "alert_configuration",
 		Columns: []Column{
-		    {
-		        Name: "\"default\"",
-		        Default: "false",
-		    },
+			{
+				Name:    "\"default\"",
+				Default: "false",
+			},
 		},
 	},
 	{
@@ -141,10 +141,10 @@ var TableChanges = []TableChange{
 				Name:    "is_disabled",
 				Default: "false",
 			},
-            {
-                Name:    "is_service_account",
-                Default: "false",
-            },
+			{
+				Name:    "is_service_account",
+				Default: "false",
+			},
 		},
 	},
 	{
@@ -161,6 +161,14 @@ var TableChanges = []TableChange{
 			{
 				Name:    "hidden",
 				Default: "false",
+			},
+		},
+	},
+	{
+		Table: "data_keys",
+		Columns: []Column{
+			{
+				Name: "active",
 			},
 		},
 	},
