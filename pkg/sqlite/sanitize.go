@@ -67,7 +67,7 @@ func HexDecode(dumpFile string) error {
 
 	// Define a function to wrap encoded hex data in a call to decode hexstring.
 	decodeHex := func(hexEncoded []byte) []byte {
-		return []byte(fmt.Sprintf("decode('%s', 'hex')", re.FindSubmatch(hexEncoded)[1]))
+		return []byte(fmt.Sprintf("convert_from('%s%s', 'utf-8')", `\x`, re.FindSubmatch(hexEncoded)[1]))
 	}
 
 	// Replace regex matches from the dumpFile using the `decodeHex` function defined above.
