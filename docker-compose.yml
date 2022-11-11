@@ -1,6 +1,7 @@
 version: "2.4"
+name: grafana-migrator
 services:
-  grafana:
+  grafana-sqlite:
     networks:
       - grafananet
     image: grafana/grafana:latest
@@ -9,6 +10,8 @@ services:
     volumes:
       - ./test/grafana/provisioning:/etc/grafana/provisioning:ro
       - grafana_sqlite:/var/lib/grafana
+    env_file:
+      - ./test/grafana/setup.env
     healthcheck:
       test: wget --spider http://localhost:3000/robots.txt
       interval: 5s
@@ -17,7 +20,7 @@ services:
     depends_on:
       - prometheus
   
-  grafana-migrator:
+  sqlite-to-postgres:
     command: /grafanadb/grafana.db "postgres://postgres:postgres@postgres_grafana:5432/grafana?sslmode=disable"
     networks:
       - grafananet
@@ -26,26 +29,28 @@ services:
       - grafana_sqlite:/grafanadb:ro
     build: ./
     depends_on:
-      grafana_postgres:
+      postgres:
         condition: service_healthy
-      grafana:
+      grafana-sqlite:
         condition: service_healthy
   
-  grafana_postgres:
+  grafana-postgres:
     networks:
       - grafananet
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
     environment:
-      GF_DATABASE_URL: "postgres://postgres:postgres@postgres_grafana/grafana"
+      GF_DATABASE_URL: "postgres://postgres:postgres@postgres/grafana"
+    env_file:
+      - ./test/grafana/setup.env
     healthcheck:
       test: wget --spider http://localhost:3000/robots.txt
       interval: 5s
       timeout: 3s
       retries: 3
     depends_on:
-      postgres_grafana:
+      postgres:
         condition: service_healthy
   
   prometheus:
@@ -59,7 +64,7 @@ services:
     ports:
       - "9090:9090"
 
-  postgres_grafana:
+  postgres:
     networks:
       - grafananet
     image: postgres:alpine
