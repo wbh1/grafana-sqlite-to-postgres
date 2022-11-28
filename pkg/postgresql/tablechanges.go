@@ -172,4 +172,13 @@ var TableChanges = []TableChange{
 			},
 		},
 	},
+	{
+		Table: "api_key",
+		Columns: []Column{
+			{
+				Name:    "is_revoked",
+				Default: "false",
+			},
+		},
+	},
 }
