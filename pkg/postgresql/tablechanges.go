@@ -27,10 +27,10 @@ var TableChanges = []TableChange{
 	{
 		Table: "alert_configuration",
 		Columns: []Column{
-		    {
-		        Name: "\"default\"",
-		        Default: "false",
-		    },
+			{
+				Name:    "\"default\"",
+				Default: "false",
+			},
 		},
 	},
 	{
@@ -59,6 +59,10 @@ var TableChanges = []TableChange{
 			},
 			{
 				Name:    "has_acl",
+				Default: "false",
+			},
+			{
+				Name:    "is_public",
 				Default: "false",
 			},
 		},
@@ -137,10 +141,10 @@ var TableChanges = []TableChange{
 				Name:    "is_disabled",
 				Default: "false",
 			},
-            {
-                Name:    "is_service_account",
-                Default: "false",
-            },
+			{
+				Name:    "is_service_account",
+				Default: "false",
+			},
 		},
 	},
 	{
@@ -148,6 +152,32 @@ var TableChanges = []TableChange{
 		Columns: []Column{
 			{
 				Name: "auth_token_seen",
+			},
+		},
+	},
+	{
+		Table: "role",
+		Columns: []Column{
+			{
+				Name:    "hidden",
+				Default: "false",
+			},
+		},
+	},
+	{
+		Table: "data_keys",
+		Columns: []Column{
+			{
+				Name: "active",
+			},
+		},
+	},
+	{
+		Table: "api_key",
+		Columns: []Column{
+			{
+				Name:    "is_revoked",
+				Default: "false",
 			},
 		},
 	},

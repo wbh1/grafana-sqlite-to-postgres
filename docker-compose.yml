@@ -1,0 +1,85 @@
+version: "2.4"
+name: grafana-migrator
+services:
+  grafana-sqlite:
+    networks:
+      - grafananet
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./test/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_sqlite:/var/lib/grafana
+    env_file:
+      - ./test/grafana/setup.env
+    healthcheck:
+      test: wget --spider http://localhost:3000/robots.txt
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    depends_on:
+      - prometheus
+  
+  sqlite-to-postgres:
+    command: /grafanadb/grafana.db "postgres://postgres:postgres@postgres_grafana:5432/grafana?sslmode=disable"
+    networks:
+      - grafananet
+    image: grafana-sqlite-to-postgres
+    volumes:
+      - grafana_sqlite:/grafanadb:ro
+    build: ./
+    depends_on:
+      postgres:
+        condition: service_healthy
+      grafana-sqlite:
+        condition: service_healthy
+  
+  grafana-postgres:
+    networks:
+      - grafananet
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_DATABASE_URL: "postgres://postgres:postgres@postgres/grafana"
+    env_file:
+      - ./test/grafana/setup.env
+    healthcheck:
+      test: wget --spider http://localhost:3000/robots.txt
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+  
+  prometheus:
+    user: root
+    networks:
+      - grafananet
+    image: prom/prometheus:latest
+    volumes:
+      - ./test/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9090:9090"
+
+  postgres:
+    networks:
+      - grafananet
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: grafana
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD", "psql", "-U", "postgres", "grafana", "-c", "select 1;"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+networks:
+  grafananet:
+volumes:
+  grafana_sqlite:
