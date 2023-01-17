@@ -99,9 +99,9 @@ func main() {
 
 	// Do HexDecoding
 	if err := sqlite.HexDecode(dumpPath); err != nil {
-		log.Fatalf("❌ %v - failed to perform hex decoding of the dump file.", err)
+		log.Fatalf("❌ %v - failed to wrap hex-encoded values in the dump file.", err)
 	}
-	log.Infoln("✅ hex-encoded data decoded")
+	log.Infoln("✅ hex-encoded data values wrapped for insertion")
 
 	// Connect to Postgres
 	db, err := postgresql.New(*connstring, log)

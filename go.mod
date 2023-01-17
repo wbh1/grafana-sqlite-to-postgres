@@ -1,10 +1,10 @@
 module github.com/percona/grafana-db-migrator
 
-go 1.17
+go 1.18
 
 require (
-	github.com/lib/pq v1.10.4
-	github.com/sirupsen/logrus v1.8.1
+	github.com/lib/pq v1.10.7
+	github.com/sirupsen/logrus v1.9.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	modernc.org/sqlite v1.14.5
 )
@@ -29,4 +29,10 @@ require (
 	modernc.org/opt v0.1.1 // indirect
 	modernc.org/strutil v1.1.1 // indirect
 	modernc.org/token v1.0.0 // indirect
+)
+
+require (
+	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
+	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
+	golang.org/x/sys v0.0.0-20221013171732-95e765b1cc43 // indirect
 )

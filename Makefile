@@ -6,6 +6,8 @@ SRC_DIR := ./cmd/grafana-migrate
 VERSION := $(shell git describe --tags --always --dirty)
 OS := $(shell go env GOOS)
 ARCH := $(shell go env GOARCH)
+TAG := $(shell git tag | tail -1)
+PWD := $(shell pwd)
 
 
 build:
@@ -14,7 +16,6 @@ build:
 build-all:
 	env GOOS=darwin GOARCH=amd64 go build -o dist/$(BIN)_darwin_amd64-$(VERSION) $(SRC_DIR)
 	env GOOS=linux GOARCH=amd64 go build -o dist/$(BIN)_linux_amd64-$(VERSION) $(SRC_DIR)
-	env GOOS=windows GOARCH=amd64 go build -o dist/$(BIN)_windows_amd64-$(VERSION) $(SRC_DIR)
 
 clean:
 	rm dist/*

@@ -39,10 +39,10 @@ func (db *DB) ImportDump(dumpFile string) error {
 		fmt.Print("You seem to have encountered some errors. Would you still like to continue? [Y/n]: ")
 		text, _ := reader.ReadString('\n')
 		switch response := strings.ToLower(text); response {
-			case "n\n":
-				return false
-			default:
-				return true
+		case "n\n":
+			return false
+		default:
+			return true
 		}
 	}
 
@@ -68,6 +68,15 @@ func (db *DB) ImportDump(dumpFile string) error {
 			// We can safely ignore "duplicate key value violates unique constraint" errors.
 			if strings.Contains(err.Error(), "duplicate key") {
 				continue
+			} else if strings.Contains(err.Error(), "is of type bytes but expression is of type text") {
+				// TODO(wbh1): This is absolutely horrible and I am ashamed of this code. Should figure out column types ahead of time.
+				db.log.Debugf("Failed to import because of type issue (%v). Trying to fix...\n", err.Error())
+				stmt = strings.Replace(
+					strings.Replace(stmt, `,convert_from('\x`, ",decode('", 1),
+					"'utf-8'", "'hex'", 1)
+				if _, err := db.conn.Exec(stmt); err != nil {
+					return fmt.Errorf("%v %v", err.Error(), stmt)
+				}
 			} else {
 				return fmt.Errorf("%v %v", err.Error(), stmt)
 			}
