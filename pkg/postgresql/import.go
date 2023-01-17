@@ -68,7 +68,7 @@ func (db *DB) ImportDump(dumpFile string) error {
 			// We can safely ignore "duplicate key value violates unique constraint" errors.
 			if strings.Contains(err.Error(), "duplicate key") {
 				continue
-			} else if strings.Contains(err.Error(), "is of type bytea but expression is of type text") {
+			} else if strings.Contains(err.Error(), "is of type bytes but expression is of type text") {
 				// TODO(wbh1): This is absolutely horrible and I am ashamed of this code. Should figure out column types ahead of time.
 				db.log.Debugf("Failed to import because of type issue (%v). Trying to fix...\n", err.Error())
 				stmt = strings.Replace(
