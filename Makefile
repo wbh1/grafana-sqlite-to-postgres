@@ -11,7 +11,7 @@ PWD := $(shell pwd)
 
 
 build:
-	go build -o dist/$(BIN) $(SRC_DIR)
+	env GOOS=linux GOARCH=amd64 go build -o dist/$(BIN) $(SRC_DIR)
 
 build-all:
 	env GOOS=darwin GOARCH=amd64 go build -o dist/$(BIN)_darwin_amd64-$(VERSION) $(SRC_DIR)

@@ -44,6 +44,7 @@ func CustomSanitize(dumpFile string, regex string, replacement []byte) error {
 
 }
 
+
 // RemoveCreateStatements takes all the CREATE statements out of a dump
 // so that no new tables are created.
 func RemoveCreateStatements(dumpFile string) error {
@@ -67,7 +68,7 @@ func HexDecode(dumpFile string) error {
 
 	// Define a function to wrap encoded hex data in a call to decode hexstring.
 	decodeHex := func(hexEncoded []byte) []byte {
-		return []byte(fmt.Sprintf("convert_from('%s%s', 'utf-8')", `\x`, re.FindSubmatch(hexEncoded)[1]))
+		return []byte(fmt.Sprintf("'%s%s'", `\x`, re.FindSubmatch(hexEncoded)[1]))
 	}
 
 	// Replace regex matches from the dumpFile using the `decodeHex` function defined above.
