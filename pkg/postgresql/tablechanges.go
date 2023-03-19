@@ -34,6 +34,33 @@ var TableChanges = []TableChange{
 		},
 	},
 	{
+		Table: "alert_configuration_history",
+		Columns: []Column{
+			{
+				Name:    "\"default\"",
+				Default: "false",
+			},
+		},
+	},
+	{
+		Table: "alert_rule",
+		Columns: []Column{
+			{
+				Name:    "is_paused",
+				Default: "false",
+			},
+		},
+	},
+	{
+		Table: "alert_rule_version",
+		Columns: []Column{
+			{
+				Name:    "is_paused",
+				Default: "false",
+			},
+		},
+	},
+	{
 		Table: "alert_notification",
 		Columns: []Column{
 			{
