@@ -37,8 +37,11 @@ pipeline:
                     connectorRef: account.harnessImage
                     image: plugins/github-release
                     settings:
-                      api_key: foo
+                      api_key: <+secrets.getValue("github_api_key")>
                       files: dist/*
+                  when:
+                    stageStatus: Success
+                    condition: <+codebase.tag> != null
           platform:
             os: Linux
             arch: Amd64
