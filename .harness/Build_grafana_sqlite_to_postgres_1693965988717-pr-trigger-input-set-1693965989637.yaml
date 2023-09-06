@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_grafana_sqlite_to_postgres_1693965988717-pr-trigger-input-set
+  identifier: Build_grafana_sqlite_to_postgres_1693965988717prtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Build_grafana_sqlite_to_postgres_1693965988717
+    properties:
+      ci:
+        codebase:
+          build:
+            type: PR
+            spec:
+              number: <+trigger.prNumber>
