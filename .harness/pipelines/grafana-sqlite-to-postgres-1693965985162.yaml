@@ -21,31 +21,28 @@ pipeline:
                   identifier: gobuild
                   name: go_build
                   spec:
-                    command: go build
+                    connectorRef: account.harnessImage
+                    image: golang:1.18
+                    shell: Sh
+                    command: make build-all
                   timeout: ""
                   type: Run
+                  when:
+                    stageStatus: Success
               - step:
-                  identifier: gotest
-                  name: go_test
-                  spec:
-                    command: go test -v ./...
-                  timeout: ""
-                  type: Run
-              - step:
-                  identifier: dockerbuild
-                  name: docker_build
-                  spec:
-                    image: plugins/docker
-                    settings:
-                      dry_run: "true"
-                      repo: hello/world
-                      tags: latest
-                  timeout: ""
                   type: Plugin
+                  name: publish_release
+                  identifier: publish_release
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: plugins/github-release
+                    settings:
+                      api_key: foo
+                      files: dist/*
           platform:
-            arch: Amd64
             os: Linux
+            arch: Amd64
           runtime:
-            spec: {}
             type: Cloud
+            spec: {}
         type: CI
