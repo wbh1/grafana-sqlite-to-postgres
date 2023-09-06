@@ -1,8 +1,13 @@
 # Grafana SQLite to Postgres Database Migrator
 
-[![Build Status](https://cloud.drone.io/api/badges/wbh1/grafana-sqlite-to-postgres/status.svg)](https://cloud.drone.io/wbh1/grafana-sqlite-to-postgres)
 [![Go Report Card](https://goreportcard.com/badge/github.com/wbh1/grafana-sqlite-to-postgres)](https://goreportcard.com/report/github.com/wbh1/grafana-sqlite-to-postgres)
 
+# ⚠️ Unmaintained Warning ⚠️ 
+WARNING: This project is currently maintained at a "best-effort" level. I no longer have the free time to keep up with changes to Grafana's database schema and handle/test edge cases.
+
+One day, perhaps this can be rewritten to be more flexible, but it is not now. I'll continue to try to accept PRs as needed. This project started out of necessity and a desire to make a difficult move simpler for others. However, it's not something that I've personally had to use for years, so it's difficult to justify continuing to put in effort to this.
+
+Use the project at your own risk (always back up your database [and test the backup!!]). 
 ## Background
 [My blog post](https://wbhegedus.me/migrating-grafanas-database-from-sqlite-to-postgres/)
 
