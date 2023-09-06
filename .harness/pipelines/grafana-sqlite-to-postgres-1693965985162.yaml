@@ -1,0 +1,51 @@
+pipeline:
+  identifier: Build_grafana_sqlite_to_postgres_1693965988717
+  name: Build grafana-sqlite-to-postgres
+  orgIdentifier: default
+  projectIdentifier: default_project
+  properties:
+    ci:
+      codebase:
+        build: <+input>
+        connectorRef: account.Github_OAuth_1693965905748
+        repoName: wbh1/grafana-sqlite-to-postgres
+  stages:
+    - stage:
+        identifier: build
+        name: build
+        spec:
+          cloneCodebase: true
+          execution:
+            steps:
+              - step:
+                  identifier: gobuild
+                  name: go_build
+                  spec:
+                    command: go build
+                  timeout: ""
+                  type: Run
+              - step:
+                  identifier: gotest
+                  name: go_test
+                  spec:
+                    command: go test -v ./...
+                  timeout: ""
+                  type: Run
+              - step:
+                  identifier: dockerbuild
+                  name: docker_build
+                  spec:
+                    image: plugins/docker
+                    settings:
+                      dry_run: "true"
+                      repo: hello/world
+                      tags: latest
+                  timeout: ""
+                  type: Plugin
+          platform:
+            arch: Amd64
+            os: Linux
+          runtime:
+            spec: {}
+            type: Cloud
+        type: CI
