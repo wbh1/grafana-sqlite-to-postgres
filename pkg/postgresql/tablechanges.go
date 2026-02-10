@@ -118,6 +118,10 @@ var TableChanges = []TableChange{
 				Name:    "with_credentials",
 				Default: "false",
 			},
+			{
+				Name:    "is_prunable",
+				Default: "false",
+			},
 		},
 	},
 	{
@@ -156,6 +160,15 @@ var TableChanges = []TableChange{
 		},
 	},
 	{
+		Table: "team",
+		Columns: []Column{
+			{
+				Name:    "is_provisioned",
+				Default: "false",
+			},
+		},
+	},
+	{
 		Table: "\"user\"",
 		Columns: []Column{
 			{
@@ -163,6 +176,10 @@ var TableChanges = []TableChange{
 			},
 			{
 				Name: "email_verified",
+			},
+			{
+				Name:    "is_provisioned",
+				Default: "false",
 			},
 			{
 				Name:    "is_disabled",
@@ -205,6 +222,24 @@ var TableChanges = []TableChange{
 			{
 				Name:    "is_revoked",
 				Default: "false",
+			},
+		},
+	},
+	{
+		Table: "sso_setting",
+		Columns: []Column{
+			{
+				Name:    "is_deleted",
+				Default: "false",
+			},
+		},
+	},
+	{
+		Table: "resource_migration_log",
+		Columns: []Column{
+			{
+				Name:    "success",
+				Default: "true",
 			},
 		},
 	},
