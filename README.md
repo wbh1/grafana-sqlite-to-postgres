@@ -3,11 +3,22 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/wbh1/grafana-sqlite-to-postgres)](https://goreportcard.com/report/github.com/wbh1/grafana-sqlite-to-postgres)
 
 # ⚠️ Unmaintained Warning ⚠️ 
-WARNING: This project is currently maintained at a "best-effort" level. I no longer have the free time to keep up with changes to Grafana's database schema and handle/test edge cases.
 
-One day, perhaps this can be rewritten to be more flexible, but it is not now. I'll continue to try to accept PRs as needed. This project started out of necessity and a desire to make a difficult move simpler for others. However, it's not something that I've personally had to use for years, so it's difficult to justify continuing to put in effort to this.
+> [!WARNING]
+> This project is currently maintained at a "best-effort" level. I no longer have the free time to keep up with changes to Grafana's database schema and handle/test edge cases.
+> 
+> One day, perhaps this can be rewritten to be more flexible, but it is not now. I'll continue to try to accept PRs as needed. This project started out of necessity and a desire to make a difficult move simpler for others. However, it's not something that I've personally had to use for years, so it's difficult to justify continuing to put in effort to this.
+>
+> Use the project at your own risk (always back up your database [and test the backup!!]).
 
-Use the project at your own risk (always back up your database [and test the backup!!]). 
+There _are_ some forks of the project that have been kept more up-to-date that you can consider:
+
+1. https://github.com/rl0nergan/grafana-db-migrator/tree/feat/sanitize-booleans
+  1. This fork was from one of my coworkers, includes massive performance improvements, and was used in 2026 to migrate our [very large] SQLite Grafana DBs
+2. https://github.com/percona/grafana-db-migrator
+  1. The `rl0nergan` repo above is a fork of Percona's fork of this repo
+  2. Percona knows more than me about databases. I'd trust them.
+
 ## Background
 [My blog post](https://wbhegedus.me/migrating-grafanas-database-from-sqlite-to-postgres/)
 
