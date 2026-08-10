@@ -37,6 +37,7 @@ Tested on:
 | MacOS          | 3.24.0         | 11.3             | 6.1.0+          |
 | CentOS 7/RHEL7 | 3.7.17         | 11.3             | 6.1.0+          |
 | Fedora 36      | 3.36.0         | 15.0             | 9.2.0           |
+| Ubuntu 24.04   | 3.46.1         | 16.13            | 11.6.14         |
 
 ## Usage
 ```
@@ -45,13 +46,36 @@ usage: Grafana SQLite to Postgres Migrator [<flags>] <sqlite-file> <postgres-con
 A command-line application to migrate Grafana data from SQLite to Postgres.
 
 Flags:
-  --help       Show context-sensitive help (also try --help-long and --help-man).
-  --dump=/tmp  Directory path where the sqlite dump should be stored.
+  --help                           Show context-sensitive help (also try --help-long and --help-man).
+  --dump=/tmp                      Directory path where the sqlite dump should be stored.
+  --debug                          Enable debug level logging.
+  --progress-interval-seconds=60   How often to log import progress in seconds. Set to 0 to disable periodic updates.
+  --insert-batch-size=200          How many same-shape INSERT statements to combine into one multi-row INSERT.
 
 Args:
   <sqlite-file>                 Path to SQLite file being imported.
   <postgres-connection-string>  URL-format database connection string to use in the URL format (postgres://USERNAME:PASSWORD@HOST/DATABASE).
 ```
+
+### New functionality
+- Automatically clears existing rows from Grafana tables in the `public` schema before import.
+  - The `migration_log` table is intentionally skipped.
+- Adds batched inserts for faster imports via `--insert-batch-size` (default `200`).
+  - Falls back to single-row inserts if a batch fails.
+- Adds periodic progress logs during import via `--progress-interval-seconds` (default `60`, set `0` to disable).
+- Improves SQLite to Postgres type compatibility during import:
+  - Handles SQLite hex values for Postgres `BYTEA` columns.
+  - Temporarily converts Postgres boolean columns for SQLite `0/1` import, then restores boolean types.
+
+### Batched inserts
+This functionality dramatically improves import speed - in my environment, 1.6 million rows were expected to take 1.5h to import before optimization. After the batching code was added, import completes in less than 2 minutes.
+
+### Important behavior change
+This tool now performs a full data refresh of the target Grafana database tables before importing.
+If your target database contains data you want to keep, back it up first and test migration in a non-production environment.
+
+If a migration is interrupted before completion, you **must** start again with a clean target database. Although table cleanup now runs before import, an aborted migration may leave temporarily converted boolean columns as integers. If that happens, later runs will not convert those columns back, resulting in an inconsistent schema compared with what Grafana expects.
+
 ### Use as Docker image
 1. Build docker image: `docker build -t grafana-sqlite-to-postgres .`
 2. Run migration: `docker run --rm -ti -v <PATH_TO_DB_FILE>:/grafana.db grafana-sqlite-to-postgres /grafana.db "postgres://<USERNAME>:<PASSWORD>@<HOST>:5432/<DATABASE_NAME>?sslmode=disable"`
@@ -66,7 +90,9 @@ Notice the `?sslmode=disable` parameter. The [pq](https://github.com/lib/pq) dri
 ## How it works
 1. Dumps SQLite database to /tmp
 2. Sanitize the dump so it can be imported to Postgres
-3. Import the dump to the Grafana database
+3. Clears existing rows from Grafana tables in Postgres (except `migration_log`)
+4. Imports the dump to the Grafana database (with batching and progress reporting)
+5. Restores boolean column types and fixes sequences
 
 ## Acknowledgments
 Inspiration for this program was taken from

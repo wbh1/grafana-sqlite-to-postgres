@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"time"
 
 	"github.com/wbh1/grafana-sqlite-to-postgres/pkg/postgresql"
 	"github.com/wbh1/grafana-sqlite-to-postgres/pkg/sqlite"
@@ -17,6 +18,8 @@ var (
 	sqlitefile = app.Arg("sqlite-file", "Path to SQLite file being imported.").Required().File()
 	connstring = app.Arg("postgres-connection-string", "URL-format database connection string to use in the URL format (postgres://USERNAME:PASSWORD@HOST/DATABASE).").Required().String()
 	debug      = app.Flag("debug", "Enable debug level logging").Bool()
+	progress   = app.Flag("progress-interval-seconds", "How often to log import progress in seconds. Set to 0 to disable periodic updates.").Default("60").Int()
+	batchSize  = app.Flag("insert-batch-size", "How many same-shape INSERT statements to combine into one multi-row INSERT.").Default("200").Int()
 )
 
 func main() {
@@ -62,6 +65,13 @@ func main() {
 	}
 	log.Infoln("✅ sqlite3 dump sanitized")
 
+	// Inject explicit column names into INSERT statements so that values are
+	// mapped correctly when Postgres column order differs from SQLite.
+	if err := sqlite.InjectColumnNames(f.Name(), dumpPath); err != nil {
+		log.Fatalf("❌ %v - failed to inject column names into dump file.", err)
+	}
+	log.Infoln("✅ Column names injected into INSERT statements")
+
 	// Don't bother adding anything to the migration_log table.
 	if err := sqlite.CustomSanitize(dumpPath, `(?msU)[\r\n]+^.*"migration_log.*;$`, nil); err != nil {
 		log.Fatalf("❌ %v - failed to perform additional sanitizing of the dump file.", err)
@@ -88,8 +98,16 @@ func main() {
 		log.Fatalf("❌ %v - failed to connect to Postgres database.", err)
 	}
 
+	// Clear all rows from tables before importing
+	tablesCleared, rowsDeleted, err := db.ClearTableRows()
+	if err != nil {
+		log.Fatalf("❌ %v - failed to clear table rows.", err)
+	}
+	log.Infof("✅ Cleared %d rows from %d tables (skipped migration_log)", rowsDeleted, tablesCleared)
+
 	// Import the now-sanitized dump file into Postgres
-	if err := db.ImportDump(dumpPath); err != nil {
+	log.Infoln("🚚 Importing dump file to Postgres (this may take a while)")
+	if err := db.ImportDump(dumpPath, time.Duration(*progress)*time.Second, *batchSize); err != nil {
 		log.Fatalf("❌ %v - failed to import dump file to Postgres.", err)
 	}
 	log.Infoln("✅ Imported dump file to Postgres")
